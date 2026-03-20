@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Tirage en ligne des 22 Arcanes Majeurs du Tarot de Marseille. Interprétations traditionnelles en français.">
+<meta name="theme-color" content="#0a0a12">
 <title>Tarot de Marseille — Tirage des Arcanes Majeurs</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
@@ -202,13 +204,10 @@ header .subtitle{
   75%{transform:translateY(-15px) rotate(5deg)}
   100%{transform:translateY(0) rotate(0deg)}
 }
-.shuffling .card-container{
-  animation:shuffleBounce 0.5s ease-in-out;
-}
-.shuffling .card-container:nth-child(1) .card-inner{animation-delay:0s}
-.shuffling .card-container:nth-child(2) .card-inner{animation-delay:0.1s}
-.shuffling .card-container:nth-child(3) .card-inner{animation-delay:0.2s}
-.shuffling .card-container:nth-child(4) .card-inner{animation-delay:0.3s}
+.shuffling .card-slot:nth-child(1) .card-container{animation:shuffleBounce 0.5s ease-in-out 0s}
+.shuffling .card-slot:nth-child(2) .card-container{animation:shuffleBounce 0.5s ease-in-out 0.1s}
+.shuffling .card-slot:nth-child(3) .card-container{animation:shuffleBounce 0.5s ease-in-out 0.2s}
+.shuffling .card-slot:nth-child(4) .card-container{animation:shuffleBounce 0.5s ease-in-out 0.3s}
 
 /* Interpretation */
 .interpretation-section{
@@ -257,6 +256,24 @@ footer{
 .fade-in{animation:fadeIn 0.8s ease forwards;opacity:0}
 @keyframes fadeIn{to{opacity:1}}
 
+/* Card glow on reveal */
+.card-inner.flipped .card-front{
+  box-shadow:0 0 25px rgba(212,168,67,0.15),0 0 60px rgba(212,168,67,0.08);
+  transition:box-shadow 1s ease;
+}
+
+/* Question section transition */
+.question-section{transition:opacity 0.5s ease,max-height 0.5s ease;overflow:hidden}
+.question-section.hidden{opacity:0;max-height:0 !important;padding:0 1rem;pointer-events:none}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+  .card-inner{transition:none !important}
+  .card-inner.flipped{transform:rotateY(180deg)}
+  html{scroll-behavior:auto}
+}
+
 /* Responsive */
 @media(max-width:720px){
   .cards-row{gap:1rem}
@@ -267,11 +284,23 @@ footer{
 }
 @media(max-width:480px){
   .cards-row{gap:0.7rem}
-  .card-container{width:110px;height:185px}
-  .card-front .card-icon{font-size:2rem}
-  .card-front .card-numeral{font-size:0.75rem}
-  .card-front .card-title{font-size:0.6rem}
+  .card-container{width:105px;height:178px}
+  .card-front .card-icon{font-size:1.8rem}
+  .card-front .card-numeral{font-size:0.7rem}
+  .card-front .card-title{font-size:0.55rem}
+  .card-position-label{font-size:0.7rem}
   header h1{letter-spacing:0.03em}
+  .interp-card{padding:1rem 0.8rem}
+  .synthesis{padding:1.2rem}
+}
+@media(max-width:360px){
+  .cards-row{gap:0.4rem}
+  .card-container{width:80px;height:138px}
+  .card-front .card-icon{font-size:1.4rem}
+  .card-front .card-numeral{font-size:0.6rem}
+  .card-front .card-title{font-size:0.5rem}
+  .card-position-label{font-size:0.6rem}
+  .card-front{padding:6px 4px}
 }
 </style>
 </head>
@@ -292,12 +321,12 @@ footer{
     <button class="btn" id="drawBtn" onclick="startReading()">Tirer les cartes</button>
   </section>
 
-  <section class="spread-area" id="spreadArea">
+  <section class="spread-area" id="spreadArea" aria-label="Cartes tirées">
     <h2 class="spread-title">Votre Tirage — Quatre Arcanes</h2>
-    <div class="cards-row" id="cardsRow"></div>
+    <div class="cards-row" id="cardsRow" role="list" aria-label="Les quatre arcanes"></div>
   </section>
 
-  <section class="interpretation-section" id="interpSection">
+  <section class="interpretation-section" id="interpSection" aria-live="polite" aria-label="Interprétation du tirage">
     <div id="interpCards"></div>
     <div class="synthesis" id="synthesis"></div>
     <div class="reset-area">
@@ -306,7 +335,11 @@ footer{
   </section>
 </div>
 
-<footer>Créé avec ✨ par Loïc Gasser</footer>
+<footer>
+  <span class="ornament"></span>
+  <p>Créé avec ✨ par Loïc Gasser</p>
+  <p style="font-size:0.8rem;margin-top:0.5rem;color:rgba(138,128,112,0.6)">Le Tarot de Marseille éclaire, il ne prédit pas. Vous restez maître de votre destinée.</p>
+</footer>
 
 <script>
 // ═══════════════════════════════════════════
@@ -810,6 +843,20 @@ const POSITIONS = [
 let drawnCards = [];
 let userQuestion = '';
 
+// Escape HTML to prevent XSS
+function escapeHTML(str){
+  const d=document.createElement('div');
+  d.textContent=str;
+  return d.innerHTML;
+}
+
+// Re-trigger fade-in animation on an element
+function refadeIn(el){
+  el.classList.remove('fade-in');
+  void el.offsetWidth; // force reflow
+  el.classList.add('fade-in');
+}
+
 // Stars
 function createStars(){
   const s=document.getElementById('stars');
@@ -838,6 +885,8 @@ function buildCard(draw,pos,index){
   const c=draw.card;
   const slot=document.createElement('div');
   slot.className='card-slot';
+  slot.setAttribute('role','listitem');
+  slot.setAttribute('aria-label',`${pos.label}: ${c.name}${draw.reversed?' renversée':' droite'}`);
   slot.innerHTML=`
     <div class="card-position-label">${pos.label}</div>
     <div class="card-container${draw.reversed?' reversed':''}" id="card${index}">
@@ -861,11 +910,22 @@ function buildCard(draw,pos,index){
 // Start reading
 function startReading(){
   userQuestion=document.getElementById('questionInput').value.trim();
-  if(!userQuestion){document.getElementById('questionInput').focus();return;}
+  if(!userQuestion){
+    const input=document.getElementById('questionInput');
+    input.focus();
+    input.setAttribute('aria-invalid','true');
+    return;
+  }
 
   const btn=document.getElementById('drawBtn');
   btn.disabled=true;
   btn.textContent='Les cartes se mêlent…';
+
+  // Hide question section
+  document.getElementById('questionSection').classList.add('hidden');
+
+  // Hide previous interpretation if any
+  document.getElementById('interpSection').style.display='none';
 
   drawnCards=drawCards();
 
@@ -875,11 +935,11 @@ function startReading(){
 
   const spreadArea=document.getElementById('spreadArea');
   spreadArea.style.display='block';
-  spreadArea.classList.add('fade-in');
+  refadeIn(spreadArea);
 
   // Shuffle animation
   row.classList.add('shuffling');
-  setTimeout(()=>row.classList.remove('shuffling'),600);
+  setTimeout(()=>row.classList.remove('shuffling'),800);
 
   // Sequential flip
   drawnCards.forEach((_,i)=>{
@@ -942,7 +1002,7 @@ function showInterpretation(){
 }
 
 function generateSynthesis(){
-  const q=userQuestion;
+  const q=escapeHTML(userQuestion);
   const c=drawnCards;
   const names=c.map((d,i)=>`${d.card.name}${d.reversed?' renversée':''}`);
 
@@ -986,9 +1046,13 @@ function generateSynthesis(){
 function resetReading(){
   document.getElementById('spreadArea').style.display='none';
   document.getElementById('interpSection').style.display='none';
-  document.getElementById('questionInput').value='';
-  document.getElementById('questionInput').focus();
+  const qSection=document.getElementById('questionSection');
+  qSection.classList.remove('hidden');
+  const input=document.getElementById('questionInput');
+  input.value='';
+  input.removeAttribute('aria-invalid');
   window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(()=>input.focus(),600);
 }
 
 // Enter key support
