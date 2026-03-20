@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarot de Marseille — Tirage des Arcanes Majeurs</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --gold:#d4a843;
+  --gold-light:#f0d078;
+  --gold-dark:#a07820;
+  --bg-deep:#0a0a12;
+  --bg-card:#12121e;
+  --bg-surface:#1a1a2e;
+  --text:#e8e0d0;
+  --text-muted:#8a8070;
+  --purple:#2a1a3e;
+  --crimson:#8b1a1a;
+  --blue-deep:#1a2a4e;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  background:var(--bg-deep);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+body::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,0.06) 0%,transparent 60%),
+             radial-gradient(ellipse at 20% 80%,rgba(42,26,62,0.3) 0%,transparent 50%),
+             radial-gradient(ellipse at 80% 80%,rgba(26,42,78,0.3) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+.container{max-width:1100px;margin:0 auto;padding:1rem;position:relative;z-index:1}
+
+/* Stars background */
+.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--dur) ease-in-out infinite alternate}
+@keyframes twinkle{0%{opacity:0.1}100%{opacity:var(--max-o,0.7)}}
+
+/* Header */
+header{text-align:center;padding:3rem 1rem 2rem;position:relative}
+header h1{
+  font-family:'Cinzel',serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:900;
+  color:var(--gold);letter-spacing:0.08em;
+  text-shadow:0 0 40px rgba(212,168,67,0.3),0 2px 4px rgba(0,0,0,0.5);
+}
+header .subtitle{
+  font-size:clamp(1rem,2.5vw,1.3rem);color:var(--text-muted);
+  font-style:italic;margin-top:0.5rem;
+}
+.ornament{
+  display:block;margin:1rem auto;width:200px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.ornament::after{
+  content:'✦';display:block;text-align:center;margin-top:-0.7rem;
+  color:var(--gold);font-size:1rem;
+}
+
+/* Question section */
+.question-section{
+  text-align:center;padding:2rem 1rem;max-width:600px;margin:0 auto;
+}
+.question-section label{
+  display:block;font-family:'Cinzel',serif;font-size:1.2rem;
+  color:var(--gold-light);margin-bottom:1rem;
+}
+.question-input{
+  width:100%;padding:1rem 1.5rem;font-size:1.1rem;
+  font-family:'Cormorant Garamond',serif;
+  background:var(--bg-surface);border:1px solid rgba(212,168,67,0.3);
+  color:var(--text);border-radius:8px;outline:none;
+  transition:border-color 0.3s,box-shadow 0.3s;
+}
+.question-input:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 20px rgba(212,168,67,0.15);
+}
+.question-input::placeholder{color:var(--text-muted);font-style:italic}
+
+.btn{
+  display:inline-block;margin-top:1.5rem;padding:1rem 2.5rem;
+  font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;
+  color:var(--bg-deep);background:linear-gradient(135deg,var(--gold),var(--gold-light));
+  border:none;border-radius:8px;cursor:pointer;
+  transition:all 0.3s;letter-spacing:0.05em;
+  box-shadow:0 4px 20px rgba(212,168,67,0.3);
+}
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 30px rgba(212,168,67,0.5);
+}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-secondary{
+  background:transparent;color:var(--gold);
+  border:1px solid var(--gold);
+}
+.btn-secondary:hover{background:rgba(212,168,67,0.1)}
+
+/* Spread area */
+.spread-area{padding:2rem 0;display:none}
+.spread-title{
+  text-align:center;font-family:'Cinzel',serif;font-size:1.4rem;
+  color:var(--gold);margin-bottom:2rem;
+}
+.cards-row{
+  display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;
+  perspective:1200px;
+}
+
+/* Card */
+.card-slot{text-align:center;flex:0 0 auto}
+.card-position-label{
+  font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gold-dark);
+  margin-bottom:0.5rem;letter-spacing:0.05em;
+}
+.card-container{
+  width:160px;height:260px;perspective:800px;cursor:default;
+  margin:0 auto;
+}
+.card-inner{
+  width:100%;height:100%;position:relative;
+  transform-style:preserve-3d;transition:transform 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{
+  position:absolute;width:100%;height:100%;backface-visibility:hidden;
+  border-radius:10px;overflow:hidden;
+}
+
+/* Card back */
+.card-back{
+  background:var(--bg-surface);
+  border:2px solid var(--gold-dark);
+  display:flex;align-items:center;justify-content:center;
+}
+.card-back-pattern{
+  width:85%;height:90%;border:1px solid var(--gold-dark);border-radius:6px;
+  background:repeating-conic-gradient(var(--purple) 0% 25%,var(--bg-surface) 0% 50%) 50%/20px 20px;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-back-symbol{font-size:2.5rem;color:var(--gold);text-shadow:0 0 15px rgba(212,168,67,0.5)}
+
+/* Card front */
+.card-front{
+  transform:rotateY(180deg);
+  background:var(--bg-card);
+  border:2px solid var(--gold);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:12px 8px;
+  box-shadow:0 0 25px rgba(212,168,67,0.15);
+}
+.card-front .card-numeral{
+  font-family:'Cinzel',serif;font-size:0.9rem;font-weight:700;
+  color:var(--gold-light);letter-spacing:0.1em;
+}
+.card-front .card-icon{font-size:3.2rem;line-height:1;margin:0.3rem 0}
+.card-front .card-title{
+  font-family:'Cinzel',serif;font-size:0.75rem;font-weight:600;
+  color:var(--gold);text-align:center;line-height:1.2;
+}
+.card-front .card-accent{
+  width:60%;height:2px;margin:4px 0;
+  background:linear-gradient(90deg,transparent,var(--card-color,var(--gold)),transparent);
+}
+.card-front .card-orientation{
+  font-size:0.65rem;color:var(--text-muted);font-style:italic;
+}
+
+.card-container.reversed .card-front{transform:rotateY(180deg) rotate(180deg)}
+.card-container.reversed .card-front .card-orientation{transform:rotate(180deg)}
+
+/* Shimmer */
+.card-inner.flipped .card-front::after{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:linear-gradient(45deg,transparent 40%,rgba(212,168,67,0.08) 50%,transparent 60%);
+  animation:shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer{
+  0%{transform:translateX(-100%) translateY(-100%)}
+  100%{transform:translateX(100%) translateY(100%)}
+}
+
+/* Shuffle animation */
+@keyframes shuffleBounce{
+  0%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-20px) rotate(-5deg)}
+  50%{transform:translateY(0) rotate(0deg)}
+  75%{transform:translateY(-15px) rotate(5deg)}
+  100%{transform:translateY(0) rotate(0deg)}
+}
+.shuffling .card-container{
+  animation:shuffleBounce 0.5s ease-in-out;
+}
+.shuffling .card-container:nth-child(1) .card-inner{animation-delay:0s}
+.shuffling .card-container:nth-child(2) .card-inner{animation-delay:0.1s}
+.shuffling .card-container:nth-child(3) .card-inner{animation-delay:0.2s}
+.shuffling .card-container:nth-child(4) .card-inner{animation-delay:0.3s}
+
+/* Interpretation */
+.interpretation-section{
+  display:none;padding:2rem 0;max-width:900px;margin:0 auto;
+}
+.interp-card{
+  background:var(--bg-surface);border:1px solid rgba(212,168,67,0.2);
+  border-radius:12px;padding:1.5rem 2rem;margin-bottom:1.5rem;
+  transition:border-color 0.3s;
+}
+.interp-card:hover{border-color:rgba(212,168,67,0.5)}
+.interp-card h3{
+  font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);
+  margin-bottom:0.3rem;
+}
+.interp-card .interp-position{
+  font-size:0.85rem;color:var(--text-muted);margin-bottom:0.8rem;
+  font-style:italic;
+}
+.interp-card .interp-meaning{font-size:1.05rem;line-height:1.7}
+.interp-card .interp-keywords{
+  margin-top:0.6rem;font-size:0.9rem;color:var(--gold-dark);
+}
+
+.synthesis{
+  background:linear-gradient(135deg,rgba(42,26,62,0.4),rgba(26,42,78,0.4));
+  border:1px solid rgba(212,168,67,0.3);border-radius:12px;
+  padding:2rem;margin:2rem 0;
+}
+.synthesis h2{
+  font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold);
+  text-align:center;margin-bottom:1rem;
+}
+.synthesis p{font-size:1.1rem;line-height:1.8;text-align:justify}
+
+.reset-area{text-align:center;padding:2rem 0}
+
+/* Footer */
+footer{
+  text-align:center;padding:2rem 1rem;margin-top:2rem;
+  border-top:1px solid rgba(212,168,67,0.15);
+  color:var(--text-muted);font-size:0.95rem;
+}
+
+/* Fade in animation */
+.fade-in{animation:fadeIn 0.8s ease forwards;opacity:0}
+@keyframes fadeIn{to{opacity:1}}
+
+/* Responsive */
+@media(max-width:720px){
+  .cards-row{gap:1rem}
+  .card-container{width:130px;height:215px}
+  .card-front .card-icon{font-size:2.5rem}
+  .card-front .card-title{font-size:0.65rem}
+  .interp-card{padding:1.2rem 1rem}
+}
+@media(max-width:480px){
+  .cards-row{gap:0.7rem}
+  .card-container{width:110px;height:185px}
+  .card-front .card-icon{font-size:2rem}
+  .card-front .card-numeral{font-size:0.75rem}
+  .card-front .card-title{font-size:0.6rem}
+  header h1{letter-spacing:0.03em}
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <header>
+    <h1>Tarot de Marseille</h1>
+    <p class="subtitle">Consultation des Arcanes Majeurs</p>
+    <span class="ornament"></span>
+  </header>
+
+  <section class="question-section" id="questionSection">
+    <label for="questionInput">Concentrez-vous sur votre question…</label>
+    <input type="text" class="question-input" id="questionInput" placeholder="Posez votre question au tarot…" maxlength="200">
+    <button class="btn" id="drawBtn" onclick="startReading()">Tirer les cartes</button>
+  </section>
+
+  <section class="spread-area" id="spreadArea">
+    <h2 class="spread-title">Votre Tirage — Quatre Arcanes</h2>
+    <div class="cards-row" id="cardsRow"></div>
+  </section>
+
+  <section class="interpretation-section" id="interpSection">
+    <div id="interpCards"></div>
+    <div class="synthesis" id="synthesis"></div>
+    <div class="reset-area">
+      <button class="btn btn-secondary" onclick="resetReading()">Nouveau tirage</button>
+    </div>
+  </section>
+</div>
+
+<footer>Créé avec ✨ par Loïc Gasser</footer>
+
+<script>
+// ═══════════════════════════════════════════
+// 22 ARCANES MAJEURS — Tarot de Marseille
+// ═══════════════════════════════════════════
+const ARCANA = [
+{id:0,numeral:'',name:'Le Mat',icon:'🃏',color:'#8bc34a',
+ upright:'Liberté, voyage, spontanéité, nouveau départ, innocence, foi en la vie',
+ reversed:'Imprudence, fuite, errance, inconscience, irresponsabilité',
+ positions:{
+  situation:"Le Mat indique que vous êtes à un tournant : l'appel de l'inconnu se fait sentir. Votre situation actuelle est marquée par un désir profond de liberté et de renouveau. Quelque chose vous pousse à quitter les sentiers battus, à oser l'aventure sans filet. C'est le souffle du voyageur éternel qui traverse votre existence.",
+  obstacle:"Le Mat en obstacle révèle une imprudence ou un manque de préparation. Peut-être fuyez-vous une réalité au lieu de l'affronter. Cette carte vous invite à distinguer l'élan authentique de la simple fuite. L'obstacle ici est l'absence de racines — il faut parfois s'ancrer avant de s'envoler.",
+  conseil:"Le Mat vous conseille d'oser le saut dans l'inconnu. Faites confiance à votre intuition, allégez vos bagages émotionnels et matériels. Accueillez l'imprévu comme un cadeau. La sagesse ici réside dans l'abandon du contrôle — laissez la vie vous guider vers votre prochaine étape.",
+  resultat:"Le Mat en résultat annonce un changement radical, un départ vers une nouvelle phase de vie. L'avenir vous mène vers une liberté accrue, un chemin que vous n'aviez pas envisagé. Une aventure commence — elle sera transformatrice si vous l'accueillez avec le cœur ouvert du fou sacré."
+ },
+ uprightPositions:{
+  situation:"Le Mat droit dans la situation présente symbolise un élan vital, un souffle de renouveau. Vous êtes au seuil d'un voyage — intérieur ou extérieur — qui promet d'être transformateur.",
+  obstacle:"En appui, Le Mat vous offre sa légèreté et sa confiance en la vie. Cette énergie de liberté vous aide à dépasser les blocages en refusant de vous laisser enfermer.",
+  conseil:"Osez ! Le Mat droit vous invite à suivre votre instinct le plus pur. Lâchez prise sur le besoin de tout contrôler et laissez l'aventure se déployer.",
+  resultat:"Un nouveau départ lumineux se profile. Le Mat droit en résultat promet une libération, un envol vers des horizons inexplorés et une renaissance."
+ },
+ reversedPositions:{
+  situation:"Le Mat renversé révèle une errance, un manque de direction. Vous tournez en rond, peut-être par peur de vous engager ou par refus d'affronter la réalité.",
+  obstacle:"L'imprudence et l'inconscience sont vos obstacles. Le Mat renversé met en garde contre les décisions prises à la légère, la fuite en avant qui ne résout rien.",
+  conseil:"Arrêtez-vous un instant. Le Mat renversé vous conseille de retrouver vos repères avant de repartir. La folie n'est sagesse que si elle est consciente.",
+  resultat:"Attention à la dispersion. Le Mat renversé en résultat avertit d'un risque d'égarement si vous ne prenez pas le temps de clarifier votre direction."
+ }
+},
+{id:1,numeral:'I',name:'Le Bateleur',icon:'🎭',color:'#e53935',
+ upright:'Commencement, habileté, initiative, potentiel, créativité, volonté',
+ reversed:'Manipulation, manque de confiance, hésitation, tromperie, talents gaspillés',
+ positions:{
+  situation:"Le Bateleur révèle que tout est en place pour un nouveau commencement. Vous disposez de tous les outils nécessaires — il ne manque que votre initiative. L'énergie créatrice est à son apogée, les possibilités s'offrent à vous comme les instruments sur la table du magicien.",
+  obstacle:"Le Bateleur en obstacle signale un manque de confiance en vos propres capacités, ou au contraire une tendance à la manipulation. Quelqu'un — peut-être vous-même — joue un jeu ambigu. Les outils sont là mais ils ne sont pas utilisés à bon escient.",
+  conseil:"Le Bateleur vous invite à prendre l'initiative avec audace et créativité. Utilisez toutes vos ressources, combinez vos talents. C'est le moment d'agir avec habileté, de montrer votre savoir-faire. La magie opère quand on ose commencer.",
+  resultat:"Le Bateleur en résultat annonce la concrétisation d'un projet. Votre habileté portera ses fruits, un nouveau cycle créatif s'ouvre. Le succès vient de votre capacité à manier habilement les différents aspects de la situation."
+ },
+ uprightPositions:{
+  situation:"Le Bateleur droit montre que vous êtes au commencement d'un cycle riche en possibilités. Votre créativité et votre volonté sont vos meilleurs atouts en ce moment.",
+  obstacle:"En appui, Le Bateleur vous offre son habileté et sa débrouillardise. Les outils sont entre vos mains — l'initiative est votre alliée.",
+  conseil:"Agissez maintenant avec confiance et créativité. Le Bateleur droit vous encourage à utiliser tous vos talents simultanément pour créer quelque chose de nouveau.",
+  resultat:"Un nouveau départ couronné de succès se dessine. Le Bateleur droit promet que vos initiatives porteront leurs fruits grâce à votre habileté."
+ },
+ reversedPositions:{
+  situation:"Le Bateleur renversé révèle de l'hésitation ou une manipulation dans votre situation. Les talents sont présents mais mal employés, ou la confiance fait défaut.",
+  obstacle:"La tromperie ou le manque d'initiative bloque votre avancée. Le Bateleur renversé signale que quelqu'un — peut-être vous — ne joue pas franc jeu.",
+  conseil:"Méfiez-vous des apparences et des belles paroles. Le Bateleur renversé vous invite à retrouver l'authenticité avant d'agir, sous peine de bâtir sur du sable.",
+  resultat:"Le Bateleur renversé en résultat avertit que sans sincérité et engagement réel, les projets risquent de tourner court ou de se révéler illusoires."
+ }
+},
+{id:2,numeral:'II',name:'La Papesse',icon:'📖',color:'#3f51b5',
+ upright:'Intuition, sagesse, mystère, patience, connaissance intérieure, gestation',
+ reversed:'Secrets cachés, rigidité, savoir ignoré, repli excessif, froideur',
+ positions:{
+  situation:"La Papesse indique que votre situation appelle au silence et à l'introspection. Les réponses que vous cherchez sont en vous, dans cette sagesse intérieure que le bruit du monde étouffe. C'est un temps de gestation, où les choses mûrissent dans l'invisible avant de se manifester.",
+  obstacle:"La Papesse en obstacle révèle un secret non dévoilé ou une vérité que vous refusez de voir. Le repli sur soi devient excessif — la connaissance enfermée dans le livre ne sert à rien si elle n'est pas appliquée. L'intuition est là mais vous ne l'écoutez pas.",
+  conseil:"La Papesse vous invite à cultiver le silence intérieur. Méditez, lisez entre les lignes, fiez-vous à votre intuition profonde. La patience est votre alliée — ne forcez rien, laissez la compréhension venir à vous comme l'eau trouve son chemin.",
+  resultat:"La Papesse en résultat annonce une révélation à venir. La vérité émergera naturellement si vous savez attendre. Un savoir précieux se dévoilera, une compréhension profonde transformera votre perception de la situation."
+ },
+ uprightPositions:{
+  situation:"La Papesse droite révèle une période de gestation silencieuse. Votre intuition est vive, les connaissances s'accumulent en profondeur — faites confiance au processus invisible.",
+  obstacle:"En appui, La Papesse vous offre sa sagesse contemplative. Votre intuition est un guide fiable, votre patience une force. La connaissance intérieure éclaire le chemin.",
+  conseil:"Écoutez le silence. La Papesse droite vous conseille de méditer, de laisser la réponse monter des profondeurs plutôt que de la chercher frénétiquement à l'extérieur.",
+  resultat:"Une révélation profonde se prépare. La Papesse droite en résultat promet l'accès à une vérité essentielle qui transformera votre compréhension."
+ },
+ reversedPositions:{
+  situation:"La Papesse renversée signale des secrets qui pèsent sur votre situation, ou une intuition que vous refusez d'écouter. Le savoir est là mais reste inaccessible.",
+  obstacle:"Un repli excessif ou une rigidité intellectuelle vous bloque. La Papesse renversée indique que vous vous enfermez dans vos certitudes au lieu de rester ouverte au mystère.",
+  conseil:"Sortez de votre tour d'ivoire. La Papesse renversée vous invite à partager votre savoir, à ouvrir le livre fermé, à laisser circuler la connaissance.",
+  resultat:"La Papesse renversée en résultat avertit que des vérités resteront cachées si vous ne faites pas l'effort de les chercher. Un secret pourrait émerger de façon inattendue."
+ }
+},
+{id:3,numeral:'III',name:"L'Impératrice",icon:'👑',color:'#e91e63',
+ upright:'Fertilité, abondance, créativité, nature, sensualité, maternité',
+ reversed:'Blocage créatif, dépendance, excès, stérilité, étouffement',
+ positions:{
+  situation:"L'Impératrice rayonne sur votre situation avec une énergie de fertilité et d'abondance. Quelque chose est en train de naître, de croître, de fleurir. C'est un moment de créativité débordante où la vie se manifeste dans toute sa générosité et sa sensualité.",
+  obstacle:"L'Impératrice en obstacle signale un excès — trop de générosité qui épuise, une créativité désordonnée, ou au contraire un blocage de l'énergie féminine créatrice. L'abondance peut devenir étouffement si elle n'est pas canalisée.",
+  conseil:"L'Impératrice vous invite à vous connecter à votre créativité naturelle, à laisser la vie s'exprimer à travers vous. Nourrissez vos projets comme on cultive un jardin — avec patience, amour et attention. Faites confiance au processus organique de la création.",
+  resultat:"L'Impératrice en résultat promet l'abondance et la fécondité. Vos efforts porteront des fruits généreux. C'est la promesse d'une récolte abondante, d'une créativité qui se matérialise, d'une vie qui s'épanouit pleinement."
+ },
+ uprightPositions:{
+  situation:"L'Impératrice droite baigne votre présent de fertilité. La vie est généreuse, la créativité coule — quelque chose de beau est en pleine éclosion.",
+  obstacle:"En appui, L'Impératrice vous offre sa force nourricière. L'abondance est votre alliée, la créativité votre ressource. Laissez la nature faire son œuvre.",
+  conseil:"Créez, nourrissez, laissez fleurir. L'Impératrice droite vous invite à embrasser le processus naturel de croissance avec confiance et sensualité.",
+  resultat:"Abondance et épanouissement se profilent. L'Impératrice droite en résultat promet une récolte généreuse et la matérialisation de vos aspirations créatives."
+ },
+ reversedPositions:{
+  situation:"L'Impératrice renversée signale un blocage créatif ou un étouffement. L'abondance s'est tarie, ou au contraire l'excès étouffe la croissance naturelle.",
+  obstacle:"La dépendance affective ou un excès de maternage bloque votre évolution. L'Impératrice renversée met en garde contre l'étouffement par trop d'amour ou de protection.",
+  conseil:"Retrouvez un équilibre entre donner et recevoir. L'Impératrice renversée vous invite à débloquer votre créativité en lâchant prise sur le contrôle.",
+  resultat:"L'Impératrice renversée en résultat suggère que la fécondité viendra, mais avec du retard ou sous une forme inattendue. Patience et ajustement sont nécessaires."
+ }
+},
+{id:4,numeral:'IV',name:"L'Empereur",icon:'🏛️',color:'#b71c1c',
+ upright:'Autorité, structure, stabilité, pouvoir, protection, paternité',
+ reversed:'Tyrannie, rigidité, abus de pouvoir, domination, inflexibilité',
+ positions:{
+  situation:"L'Empereur gouverne votre situation avec autorité et structure. C'est un moment où l'ordre, la discipline et la stratégie sont au premier plan. Le pouvoir est en jeu — qu'il s'agisse du vôtre ou de celui d'une figure d'autorité dans votre vie.",
+  obstacle:"L'Empereur en obstacle révèle une rigidité excessive ou un abus de pouvoir. Quelqu'un impose sa volonté de façon tyrannique, ou c'est vous qui vous enfermez dans un cadre trop strict. La structure devient prison quand elle ne laisse plus de place à la vie.",
+  conseil:"L'Empereur vous invite à prendre les rênes avec sagesse et fermeté. Structurez vos projets, établissez des règles claires, assumez votre autorité. Mais souvenez-vous que le vrai pouvoir protège plutôt qu'il n'opprime.",
+  resultat:"L'Empereur en résultat annonce la consolidation et la stabilité. Vos fondations seront solides, votre position assurée. Le succès viendra par la discipline, l'organisation et l'exercice responsable de l'autorité."
+ },
+ uprightPositions:{
+  situation:"L'Empereur droit stabilise votre situation. L'ordre règne, la structure est en place, l'autorité est assumée de façon constructive.",
+  obstacle:"En appui, L'Empereur vous offre sa solidité et sa capacité d'organisation. Sa discipline et sa vision stratégique vous aident à bâtir sur des fondations solides.",
+  conseil:"Structurez et organisez. L'Empereur droit vous invite à exercer votre autorité naturelle avec sagesse, à poser un cadre clair pour vos projets.",
+  resultat:"Stabilité et réussite par la discipline. L'Empereur droit en résultat promet la consolidation de vos acquis et une position de force."
+ },
+ reversedPositions:{
+  situation:"L'Empereur renversé signale un abus de pouvoir ou une rigidité qui étouffe votre situation. L'autorité est mal exercée ou contestée.",
+  obstacle:"La tyrannie — d'autrui ou de vos propres exigences — est l'obstacle. L'Empereur renversé met en garde contre l'inflexibilité et le besoin de tout contrôler.",
+  conseil:"Assouplissez votre cadre. L'Empereur renversé vous invite à relâcher votre emprise, à accepter que le pouvoir véritable sait aussi se montrer souple.",
+  resultat:"L'Empereur renversé en résultat avertit que la rigidité mènera à la rupture. La stabilité ne viendra que si vous acceptez d'adapter vos structures."
+ }
+},
+{id:5,numeral:'V',name:'Le Pape',icon:'🙏',color:'#4a148c',
+ upright:'Sagesse, enseignement, tradition, guide spirituel, bienveillance, foi',
+ reversed:'Dogmatisme, conformisme, manipulation spirituelle, faux conseil',
+ positions:{
+  situation:"Le Pape indique que votre situation est liée à un enseignement, une transmission ou une quête de sens. Un guide — visible ou invisible — éclaire votre chemin. C'est un moment où la sagesse traditionnelle et la bienveillance sont des forces actives dans votre vie.",
+  obstacle:"Le Pape en obstacle signale un dogmatisme ou un conformisme qui vous empêche d'avancer. Peut-être suivez-vous aveuglément un enseignement ou un conseil qui n'est plus adapté. La tradition devient entrave quand elle remplace la réflexion personnelle.",
+  conseil:"Le Pape vous invite à chercher un guide sage ou à devenir ce guide pour d'autres. Puisez dans la tradition et l'enseignement, mais intégrez-les avec discernement. La vraie sagesse n'impose pas — elle éclaire et laisse libre.",
+  resultat:"Le Pape en résultat promet la sagesse et la guidance. Un enseignement précieux viendra enrichir votre parcours. La bienveillance et la foi seront les clés de votre évolution future."
+ },
+ uprightPositions:{
+  situation:"Le Pape droit éclaire votre situation de sa sagesse bienveillante. Un enseignement ou un guide joue un rôle important dans votre présent.",
+  obstacle:"En appui, Le Pape vous offre la guidance dont vous avez besoin. Sa sagesse et sa bienveillance sont des forces qui soutiennent votre avancée.",
+  conseil:"Cherchez l'enseignement et la transmission. Le Pape droit vous invite à vous tourner vers un mentor ou la sagesse traditionnelle pour éclairer votre chemin.",
+  resultat:"Sagesse et guidance se profilent. Le Pape droit en résultat promet que le bon conseil viendra au bon moment et que la foi sera récompensée."
+ },
+ reversedPositions:{
+  situation:"Le Pape renversé révèle un dogmatisme ou un faux enseignement qui pèse sur votre situation. La sagesse affichée masque peut-être une manipulation.",
+  obstacle:"Le conformisme ou un mauvais conseil bloque votre avancée. Le Pape renversé met en garde contre les figures d'autorité spirituelle qui abusent de leur position.",
+  conseil:"Questionnez les enseignements reçus. Le Pape renversé vous invite à développer votre propre sagesse plutôt que de suivre aveuglément un dogme.",
+  resultat:"Le Pape renversé en résultat avertit de se méfier des conseils mal intentionnés. La véritable guidance viendra de votre discernement intérieur."
+ }
+},
+{id:6,numeral:'VI',name:"L'Amoureux",icon:'💕',color:'#c62828',
+ upright:'Choix, amour, union, harmonie, attirance, engagement du cœur',
+ reversed:'Indécision, conflit intérieur, désunion, choix imposé, tentation',
+ positions:{
+  situation:"L'Amoureux place votre situation sous le signe du choix et de l'amour. Un carrefour se présente — deux chemins, deux possibilités, peut-être deux personnes. Le cœur est sollicité, l'émotion guide. C'est un moment d'intense vitalité affective où l'âme cherche son union.",
+  obstacle:"L'Amoureux en obstacle révèle une indécision paralysante ou un conflit entre raison et passion. Le choix que vous refusez de faire devient lui-même l'obstacle. La tentation de vouloir tout garder empêche d'avancer sur un seul chemin.",
+  conseil:"L'Amoureux vous invite à écouter votre cœur et à assumer votre choix. L'amour véritable — qu'il soit pour une personne, un projet ou un idéal — demande le courage de s'engager pleinement. Choisissez avec le cœur, mais en conscience.",
+  resultat:"L'Amoureux en résultat annonce une union ou un choix décisif qui orientera votre avenir. L'harmonie se dessine pour ceux qui osent suivre la voie du cœur. L'amour, sous toutes ses formes, sera au rendez-vous."
+ },
+ uprightPositions:{
+  situation:"L'Amoureux droit illumine votre situation d'une énergie d'amour et de choix. Une union harmonieuse ou une décision du cœur marque votre présent.",
+  obstacle:"En appui, L'Amoureux vous offre la clarté du cœur. L'amour et l'harmonie sont des forces qui vous aident à surmonter les difficultés.",
+  conseil:"Suivez votre cœur avec courage. L'Amoureux droit vous invite à faire le choix de l'amour, de l'union et de l'harmonie.",
+  resultat:"Une belle union ou un choix heureux se profile. L'Amoureux droit en résultat promet l'harmonie affective et la réalisation d'un lien profond."
+ },
+ reversedPositions:{
+  situation:"L'Amoureux renversé révèle une indécision ou un conflit affectif qui pèse sur votre situation. Le cœur est tiraillé, le choix impossible.",
+  obstacle:"L'indécision est votre ennemi. L'Amoureux renversé montre que le refus de choisir crée plus de souffrance que le choix lui-même.",
+  conseil:"Cessez de tergiverser. L'Amoureux renversé vous presse de trancher, même imparfaitement, car l'immobilité est le pire des choix.",
+  resultat:"L'Amoureux renversé en résultat avertit qu'un choix devra être fait, qu'on le veuille ou non. Mieux vaut le faire consciemment que le subir."
+ }
+},
+{id:7,numeral:'VII',name:'Le Chariot',icon:'⚔️',color:'#1565c0',
+ upright:'Victoire, détermination, conquête, volonté, triomphe, maîtrise de soi',
+ reversed:'Défaite, dispersion, agressivité, perte de contrôle, fuite en avant',
+ positions:{
+  situation:"Le Chariot lance votre situation dans une dynamique de conquête et de victoire. Les forces sont en mouvement, la volonté est puissante, l'élan irrésistible. C'est le moment de l'action triomphante, où la maîtrise de soi permet de diriger les énergies contraires vers un même but.",
+  obstacle:"Le Chariot en obstacle signale une perte de contrôle ou une dispersion des forces. L'agressivité remplace la détermination, la fuite en avant remplace la conquête. Les chevaux tirent dans des directions opposées — il faut reprendre les rênes.",
+  conseil:"Le Chariot vous exhorte à avancer avec détermination et confiance. Maîtrisez vos forces contradictoires, canalisez votre énergie vers un objectif clair. La victoire appartient à celui qui sait maintenir le cap malgré les tensions.",
+  resultat:"Le Chariot en résultat annonce le triomphe et la réussite par la volonté. Vos efforts seront couronnés de succès, votre détermination récompensée. C'est la promesse d'une avancée décisive et d'une conquête méritée."
+ },
+ uprightPositions:{
+  situation:"Le Chariot droit propulse votre situation vers la victoire. La détermination et la maîtrise de soi sont vos forces dominantes en ce moment.",
+  obstacle:"En appui, Le Chariot vous offre sa puissance de conquête. La volonté inébranlable et le dynamisme sont les moteurs qui vous portent en avant.",
+  conseil:"Foncez avec maîtrise. Le Chariot droit vous invite à avancer résolument, à canaliser toutes vos forces vers votre objectif sans vous laisser dévier.",
+  resultat:"Victoire et triomphe se profilent. Le Chariot droit en résultat promet le succès par la volonté et la détermination. La conquête est à portée de main."
+ },
+ reversedPositions:{
+  situation:"Le Chariot renversé signale une perte de direction ou d'élan. Les forces se dispersent, la volonté faiblit, la maîtrise échappe.",
+  obstacle:"L'agressivité ou la fuite en avant bloquent votre progression. Le Chariot renversé met en garde contre l'excès de force mal dirigée.",
+  conseil:"Reprenez les rênes. Le Chariot renversé vous invite à ralentir, recentrer vos forces et retrouver la maîtrise avant de relancer votre avancée.",
+  resultat:"Le Chariot renversé en résultat avertit d'un risque de dérapage si les forces ne sont pas canalisées. La victoire est possible mais demande plus de maîtrise."
+ }
+},
+{id:8,numeral:'VIII',name:'La Justice',icon:'⚖️',color:'#f57f17',
+ upright:'Équilibre, vérité, loi, équité, responsabilité, clarté',
+ reversed:'Injustice, déséquilibre, malhonnêteté, jugement biaisé, rigidité',
+ positions:{
+  situation:"La Justice pose son regard impartial sur votre situation. C'est un moment de vérité où les comptes se font, où chaque acte trouve sa juste conséquence. L'équilibre est en jeu — entre donner et recevoir, entre droits et devoirs, entre passé et avenir.",
+  obstacle:"La Justice en obstacle révèle un déséquilibre ou une injustice qui entrave votre progression. Un jugement biaisé — le vôtre ou celui d'autrui — fausse la perception de la réalité. La vérité est occultée par des intérêts ou des émotions.",
+  conseil:"La Justice vous invite à peser le pour et le contre avec lucidité. Soyez honnête avec vous-même, assumez vos responsabilités, et agissez avec équité. La clarté d'esprit et la droiture sont vos meilleurs guides.",
+  resultat:"La Justice en résultat annonce un rééquilibrage. Ce qui est juste sera rendu, les situations tordues seront redressées. Le résultat sera à la mesure de vos actes — ni plus, ni moins."
+ },
+ uprightPositions:{
+  situation:"La Justice droite règne sur votre situation avec clarté. L'équilibre est présent, la vérité accessible, les choses sont à leur juste place.",
+  obstacle:"En appui, La Justice vous offre son discernement. L'équité et la clarté vous aident à voir au-delà des apparences et à prendre les bonnes décisions.",
+  conseil:"Soyez juste et vrai. La Justice droite vous invite à agir avec intégrité, à assumer pleinement vos responsabilités et à peser chaque décision avec soin.",
+  resultat:"L'équilibre sera restauré. La Justice droite en résultat promet que la vérité triomphera et que chacun recevra ce qu'il mérite."
+ },
+ reversedPositions:{
+  situation:"La Justice renversée révèle un déséquilibre ou une injustice qui marque votre situation. La vérité est déformée, l'équité absente.",
+  obstacle:"Un jugement biaisé ou une malhonnêteté bloque votre avancée. La Justice renversée signale que quelqu'un ne joue pas selon les règles.",
+  conseil:"Rétablissez l'équité. La Justice renversée vous invite à identifier les déséquilibres et à œuvrer pour restaurer la vérité et l'honnêteté.",
+  resultat:"La Justice renversée en résultat avertit que les conséquences de l'injustice se feront sentir. Un rééquilibrage douloureux mais nécessaire est à prévoir."
+ }
+},
+{id:9,numeral:'IX',name:"L'Hermite",icon:'🏔️',color:'#546e7a',
+ upright:'Solitude, sagesse, recherche intérieure, prudence, guide, lumière',
+ reversed:'Isolement, misanthropie, refus d\'aide, peur, repli',
+ positions:{
+  situation:"L'Hermite éclaire votre situation de sa lanterne solitaire. C'est un temps de retrait nécessaire, de recherche intérieure profonde. Vous traversez une période où la solitude n'est pas vide mais féconde — chaque pas mesuré rapproche de la sagesse.",
+  obstacle:"L'Hermite en obstacle signale un isolement qui n'est plus choisi mais subi. La prudence excessive devient paralysie, la solitude se transforme en enfermement. Le refus de s'ouvrir aux autres prive de lumières nécessaires.",
+  conseil:"L'Hermite vous conseille de prendre du recul, de ralentir, de chercher la lumière en vous-même. Éloignez-vous du bruit, méditez, consultez votre sagesse intérieure. Le temps de la réflexion n'est pas du temps perdu — c'est le socle de l'action juste.",
+  resultat:"L'Hermite en résultat annonce une période de maturation solitaire mais enrichissante. La compréhension profonde viendra de cette retraite intérieure. La lumière que vous cherchez sera trouvée au plus profond de vous-même."
+ },
+ uprightPositions:{
+  situation:"L'Hermite droit éclaire votre situation de sa sagesse patiente. Un temps de retraite et de réflexion est en cours — il est nécessaire et fécond.",
+  obstacle:"En appui, L'Hermite vous offre sa prudence et sa lumière intérieure. La solitude choisie et la réflexion profonde sont vos forces.",
+  conseil:"Prenez du recul. L'Hermite droit vous invite à la retraite contemplative, à chercher en vous-même la lumière qui éclairera votre chemin.",
+  resultat:"Une sagesse profonde émergera. L'Hermite droit en résultat promet que la patience et la réflexion mèneront à une compréhension transformatrice."
+ },
+ reversedPositions:{
+  situation:"L'Hermite renversé signale un isolement subi ou une peur de s'ouvrir. La solitude pèse, la lumière semble éteinte.",
+  obstacle:"Le repli excessif sur soi bloque votre évolution. L'Hermite renversé met en garde contre la misanthropie et le refus d'aide.",
+  conseil:"Sortez de votre grotte. L'Hermite renversé vous invite à retrouver le contact avec les autres et à accepter la lumière qu'ils vous offrent.",
+  resultat:"L'Hermite renversé en résultat avertit d'un risque d'isolement stérile. La sagesse ne viendra que si vous acceptez aussi de la partager."
+ }
+},
+{id:10,numeral:'X',name:'La Roue de Fortune',icon:'🎡',color:'#ff6f00',
+ upright:'Destin, cycle, changement, chance, tournant, mouvement perpétuel',
+ reversed:'Malchance, résistance au changement, stagnation, retards, karma',
+ positions:{
+  situation:"La Roue de Fortune tourne dans votre situation, apportant son lot de changements inéluctables. Les cycles de la vie sont à l'œuvre — ce qui monte redescendra, ce qui descend remontera. Vous êtes à un tournant où le destin joue sa partition.",
+  obstacle:"La Roue de Fortune en obstacle signale une résistance au changement ou un retournement de fortune défavorable. Vous luttez contre le courant au lieu de naviguer avec lui. L'attachement au statu quo empêche la transformation nécessaire.",
+  conseil:"La Roue de Fortune vous invite à accepter le changement comme loi fondamentale de l'existence. Saisissez les opportunités quand elles se présentent, lâchez prise quand la roue tourne. La sagesse est de danser avec le mouvement plutôt que de lui résister.",
+  resultat:"La Roue de Fortune en résultat annonce un tournant décisif. Le destin intervient — pour le meilleur si vous avez su évoluer, avec plus de rudesse si vous avez résisté. Un nouveau cycle commence, porteur de renouveau."
+ },
+ uprightPositions:{
+  situation:"La Roue de Fortune droite marque un tournant favorable dans votre situation. La chance tourne en votre faveur, un nouveau cycle s'amorce.",
+  obstacle:"En appui, La Roue de Fortune vous offre le vent du changement. Le mouvement et l'adaptabilité sont vos alliés — la vie conspire en votre faveur.",
+  conseil:"Accueillez le changement. La Roue de Fortune droite vous invite à saisir l'opportunité qui se présente et à faire confiance au mouvement de la vie.",
+  resultat:"Un tournant favorable se dessine. La Roue de Fortune droite en résultat promet un changement heureux et l'ouverture d'un nouveau cycle de prospérité."
+ },
+ reversedPositions:{
+  situation:"La Roue de Fortune renversée signale une stagnation ou un retournement défavorable. Le changement que vous espérez tarde ou va dans la mauvaise direction.",
+  obstacle:"La résistance au changement ou la malchance bloque votre progression. La Roue de Fortune renversée signale un karma à résoudre.",
+  conseil:"Cessez de lutter contre le courant. La Roue de Fortune renversée vous invite à identifier ce que vous devez lâcher pour que la roue se remette à tourner.",
+  resultat:"La Roue de Fortune renversée en résultat avertit de retards et d'obstacles karmiques. Le changement viendra mais demandera davantage de patience et de lâcher-prise."
+ }
+},
+{id:11,numeral:'XI',name:'La Force',icon:'🦁',color:'#e65100',
+ upright:'Courage, force intérieure, maîtrise, douceur, persévérance, vitalité',
+ reversed:'Faiblesse, brutalité, doute de soi, épuisement, domination',
+ positions:{
+  situation:"La Force habite votre situation avec une énergie maîtrisée et puissante. C'est le courage tranquille, la douceur qui dompte la bête. Vous disposez d'une vitalité remarquable et d'une capacité à surmonter les épreuves non par la violence mais par la persévérance et la maîtrise intérieure.",
+  obstacle:"La Force en obstacle révèle un épuisement ou un usage brutal de l'énergie. La force devient violence quand elle perd sa douceur, ou faiblesse quand le doute l'envahit. L'obstacle est intérieur — un combat avec vos propres instincts.",
+  conseil:"La Force vous invite à puiser dans votre courage intérieur avec douceur et détermination. Apprivoisez vos peurs comme la femme apprivoise le lion — non par la contrainte mais par la patience et l'amour. Votre vraie force est dans votre persévérance tranquille.",
+  resultat:"La Force en résultat promet la victoire par la maîtrise de soi. Votre persévérance sera récompensée, votre courage reconnu. C'est une force qui dure parce qu'elle vient du plus profond de l'être."
+ },
+ uprightPositions:{
+  situation:"La Force droite anime votre situation d'un courage tranquille. La maîtrise intérieure et la persévérance sont vos atouts dominants.",
+  obstacle:"En appui, La Force vous offre sa vitalité et son courage doux. La capacité à dompter les instincts avec patience est votre plus grande ressource.",
+  conseil:"Faites preuve de courage et de douceur simultanément. La Force droite vous invite à persévérer avec grâce, à dompter vos peurs avec bienveillance.",
+  resultat:"La maîtrise de soi triomphera. La Force droite en résultat promet que votre persévérance patiente mènera à un succès durable et profond."
+ },
+ reversedPositions:{
+  situation:"La Force renversée révèle un épuisement ou un doute de soi qui mine votre situation. Le courage vacille, la maîtrise échappe.",
+  obstacle:"La brutalité ou la faiblesse bloque votre progression. La Force renversée signale un combat intérieur mal engagé — trop de force ou pas assez.",
+  conseil:"Retrouvez votre centre. La Force renversée vous invite à recharger vos réserves intérieures avant de reprendre le combat avec la douceur du lion apprivoisé.",
+  resultat:"La Force renversée en résultat avertit que l'épuisement guette si vous ne trouvez pas le juste équilibre entre effort et repos."
+ }
+},
+{id:12,numeral:'XII',name:'Le Pendu',icon:'🙃',color:'#00695c',
+ upright:'Sacrifice, lâcher-prise, suspension, vision nouvelle, acceptation, don de soi',
+ reversed:'Résistance, sacrifice inutile, stagnation, égoïsme, victimisation',
+ positions:{
+  situation:"Le Pendu suspend votre situation dans un temps hors du temps. Tout semble immobile, inversé, paradoxal. Pourtant cette suspension est sacrée — c'est en acceptant de voir le monde à l'envers que l'on découvre des vérités invisibles aux yeux de ceux qui restent debout.",
+  obstacle:"Le Pendu en obstacle signale un sacrifice mal vécu ou une stagnation que vous refusez d'accepter. La résistance au lâcher-prise crée plus de souffrance que l'abandon lui-même. Vous êtes accroché à ce qu'il faudrait laisser partir.",
+  conseil:"Le Pendu vous invite au lâcher-prise radical. Acceptez la suspension, le temps d'arrêt, le sacrifice nécessaire. En renonçant à ce qui vous retient, vous gagnerez une vision nouvelle et une liberté insoupçonnée. La sagesse est parfois de ne rien faire.",
+  resultat:"Le Pendu en résultat annonce une transformation par le sacrifice et l'abandon. Ce que vous lâchez aujourd'hui libère l'espace pour ce qui doit venir. La vision inversée deviendra votre plus grande sagesse."
+ },
+ uprightPositions:{
+  situation:"Le Pendu droit place votre situation dans une pause sacrée. Le temps est suspendu, la vision s'inverse — une révélation se prépare dans l'immobilité.",
+  obstacle:"En appui, Le Pendu vous offre sa sagesse du lâcher-prise. L'acceptation et le don de soi sont des forces qui transforment l'épreuve en illumination.",
+  conseil:"Lâchez prise. Le Pendu droit vous invite à accepter la suspension, à voir le monde depuis un angle nouveau, à trouver la sagesse dans le sacrifice.",
+  resultat:"Une transformation profonde par l'abandon. Le Pendu droit en résultat promet que votre sacrifice sera fécond et que la vision inversée portera ses fruits."
+ },
+ reversedPositions:{
+  situation:"Le Pendu renversé signale une résistance au lâcher-prise ou un sacrifice devenu vain. Vous restez suspendu sans en tirer la leçon.",
+  obstacle:"Le refus de lâcher prise ou la victimisation bloque votre évolution. Le Pendu renversé met en garde contre le sacrifice inutile et la stagnation complaisante.",
+  conseil:"Cessez de jouer la victime. Le Pendu renversé vous invite à vous libérer d'une situation de suspension qui n'a plus de sens et à reprendre votre pouvoir.",
+  resultat:"Le Pendu renversé en résultat avertit que la stagnation se prolongera tant que vous n'accepterez pas de lâcher ce qui vous retient."
+ }
+},
+{id:13,numeral:'XIII',name:'L\'Arcane sans Nom',icon:'🌾',color:'#37474f',
+ upright:'Transformation, fin et renouveau, mutation profonde, renaissance, libération',
+ reversed:'Résistance au changement, peur, transformation bloquée, fin refusée',
+ positions:{
+  situation:"L'Arcane sans Nom fauche ce qui doit disparaître dans votre situation. C'est la grande transformation — non pas une destruction mais une mutation profonde. Quelque chose s'achève pour que le nouveau puisse naître. La terre est retournée pour accueillir de nouvelles semences.",
+  obstacle:"L'Arcane sans Nom en obstacle révèle une résistance farouche au changement nécessaire. Vous vous accrochez à ce qui meurt, refusant la transformation inévitable. La peur de la fin empêche le renouveau — c'est le deuil non fait qui bloque le vivant.",
+  conseil:"L'Arcane sans Nom vous invite à accueillir la transformation avec courage. Laissez mourir ce qui doit mourir — habitudes, relations, croyances dépassées. La faux n'est pas cruelle, elle est nécessaire. De cette terre retournée naîtra quelque chose de plus vivant.",
+  resultat:"L'Arcane sans Nom en résultat annonce une métamorphose profonde. La fin d'un cycle est le commencement d'un autre. Après le passage de la faux, la renaissance sera d'autant plus éclatante que la transformation aura été pleinement acceptée."
+ },
+ uprightPositions:{
+  situation:"L'Arcane sans Nom droit marque une transformation en cours dans votre situation. La fin d'un cycle se déroule naturellement, préparant la renaissance.",
+  obstacle:"En appui, l'Arcane sans Nom vous offre la puissance de la transformation. La capacité à laisser mourir l'ancien pour accueillir le nouveau est votre force.",
+  conseil:"Acceptez la fin pour accueillir le début. L'Arcane sans Nom droit vous invite à embrasser la mutation sans résistance, à faire confiance au cycle de la vie.",
+  resultat:"Une renaissance après la transformation. L'Arcane sans Nom droit en résultat promet un renouveau profond et libérateur après le passage nécessaire."
+ },
+ reversedPositions:{
+  situation:"L'Arcane sans Nom renversé signale une transformation bloquée. Le changement nécessaire est refusé ou craint, la stagnation s'installe.",
+  obstacle:"La peur du changement ou le refus de lâcher l'ancien bloque votre évolution. L'Arcane sans Nom renversé met en garde contre la résistance au cycle naturel.",
+  conseil:"Cessez de résister à l'inévitable. L'Arcane sans Nom renversé vous presse d'accepter la fin de ce qui est révolu pour libérer l'espace du renouveau.",
+  resultat:"L'Arcane sans Nom renversé en résultat avertit que la transformation viendra de toute façon — mieux vaut l'accueillir que la subir."
+ }
+},
+{id:14,numeral:'XIV',name:'Tempérance',icon:'🌊',color:'#00838f',
+ upright:'Équilibre, patience, harmonie, guérison, fluidité, modération',
+ reversed:'Excès, impatience, déséquilibre, intempérance, conflit intérieur',
+ positions:{
+  situation:"Tempérance verse ses eaux bienfaisantes sur votre situation, apportant équilibre et harmonie. C'est un moment de guérison, de réconciliation des contraires. Les énergies se mêlent et se tempèrent mutuellement, créant un flux harmonieux et régénérateur.",
+  obstacle:"Tempérance en obstacle signale un déséquilibre ou une impatience qui perturbe l'harmonie. Les excès — dans un sens ou dans l'autre — empêchent le flux naturel de s'établir. Le mélange ne se fait pas, les contraires s'affrontent au lieu de se compléter.",
+  conseil:"Tempérance vous invite à la patience et à la modération. Cherchez l'équilibre entre les extrêmes, mêlez les contraires avec douceur. La guérison vient de la fluidité — laissez les choses se mélanger naturellement, sans forcer ni précipiter.",
+  resultat:"Tempérance en résultat promet l'harmonie retrouvée et la guérison. Les conflits se résolvent, les tensions s'apaisent, un nouvel équilibre s'établit. C'est la promesse d'une sérénité profonde et durable."
+ },
+ uprightPositions:{
+  situation:"Tempérance droite baigne votre situation d'harmonie et de fluidité. L'équilibre se rétablit naturellement, la guérison est en cours.",
+  obstacle:"En appui, Tempérance vous offre sa patience et sa capacité d'harmonisation. La modération et la fluidité sont vos alliées les plus précieuses.",
+  conseil:"Cultivez la patience et l'harmonie. Tempérance droite vous invite à laisser le temps faire son œuvre, à mélanger les énergies avec douceur et conscience.",
+  resultat:"Équilibre et guérison se profilent. Tempérance droite en résultat promet une résolution harmonieuse et un retour à la sérénité."
+ },
+ reversedPositions:{
+  situation:"Tempérance renversée révèle un déséquilibre ou des excès qui perturbent votre situation. L'harmonie est rompue, la patience fait défaut.",
+  obstacle:"L'impatience ou l'intempérance bloque l'harmonie. Tempérance renversée met en garde contre les excès qui empêchent le flux naturel de s'établir.",
+  conseil:"Retrouvez la mesure. Tempérance renversée vous invite à identifier vos excès et à rétablir l'équilibre avant que le déséquilibre ne s'aggrave.",
+  resultat:"Tempérance renversée en résultat avertit que l'harmonie ne viendra que si les excès sont corrigés. Un effort de modération est nécessaire."
+ }
+},
+{id:15,numeral:'XV',name:'Le Diable',icon:'🔥',color:'#b71c1c',
+ upright:'Passion, attachement, tentation, énergie vitale, chaînes, désir',
+ reversed:'Libération, rupture des chaînes, prise de conscience, détachement',
+ positions:{
+  situation:"Le Diable dévoile les chaînes invisibles de votre situation. Passions dévorantes, attachements matériels ou affectifs, dépendances — l'énergie est intense mais elle lie autant qu'elle enflamme. C'est un moment de vérité sur vos désirs les plus profonds et les liens qui vous enchaînent.",
+  obstacle:"Le Diable en obstacle révèle une dépendance ou une tentation qui vous emprisonne. Les chaînes sont peut-être dorées mais elles n'en sont pas moins des chaînes. L'attachement excessif — à une personne, une habitude, un confort — est le véritable obstacle à votre liberté.",
+  conseil:"Le Diable vous invite à regarder en face vos attachements et vos ombres. Reconnaissez vos chaînes pour pouvoir les briser. L'énergie du désir n'est pas mauvaise en soi — c'est l'inconscience qui la rend destructrice. Éclairez votre ombre pour la transformer.",
+  resultat:"Le Diable en résultat annonce une confrontation nécessaire avec vos attachements. La passion sera intense, les enjeux élevés. De cette descente dans l'ombre peut naître une prise de conscience libératrice — si vous avez le courage de regarder."
+ },
+ uprightPositions:{
+  situation:"Le Diable droit révèle les passions et attachements qui animent votre situation. L'énergie est intense, les désirs puissants — les chaînes visibles ou invisibles.",
+  obstacle:"En obstacle ou appui paradoxal, Le Diable droit montre que vos passions sont aussi votre carburant. L'énergie vitale brute peut servir ou asservir — tout dépend de votre conscience.",
+  conseil:"Regardez votre ombre en face. Le Diable droit vous invite à reconnaître vos attachements et désirs profonds pour pouvoir les maîtriser plutôt que les subir.",
+  resultat:"Une confrontation intense avec vos désirs et attachements. Le Diable droit en résultat promet une expérience puissante qui révélera la nature de vos chaînes."
+ },
+ reversedPositions:{
+  situation:"Le Diable renversé signale un début de libération. Les chaînes se desserrent, la prise de conscience émerge. Vous commencez à voir vos attachements pour ce qu'ils sont.",
+  obstacle:"Paradoxalement, la libération elle-même peut être l'obstacle — la peur de la liberté, l'attachement aux chaînes familières. Le Diable renversé montre que lâcher ses dépendances demande du courage.",
+  conseil:"Brisez vos chaînes. Le Diable renversé vous encourage à vous libérer de ce qui vous attache et vous limite. Le moment est propice au détachement.",
+  resultat:"Le Diable renversé en résultat promet la libération. Les chaînes se brisent, la conscience s'éveille, un nouveau rapport au désir et à l'attachement émerge."
+ }
+},
+{id:16,numeral:'XVI',name:'La Maison Dieu',icon:'⚡',color:'#ff5722',
+ upright:'Effondrement, révélation soudaine, libération, destruction créatrice, vérité brutale',
+ reversed:'Résistance à l\'effondrement, catastrophe évitée, reconstruction lente',
+ positions:{
+  situation:"La Maison Dieu frappe votre situation de son éclair révélateur. Les structures branlantes s'effondrent, les illusions volent en éclats. C'est la destruction créatrice — douloureuse mais nécessaire. La tour construite sur de fausses fondations ne peut que tomber pour être reconstruite sur la vérité.",
+  obstacle:"La Maison Dieu en obstacle annonce un choc ou un effondrement que vous tentez d'éviter. La résistance à l'inévitable destruction augmente la douleur. Ce qui doit tomber tombera — l'obstacle est votre refus d'accepter cette vérité brutale.",
+  conseil:"La Maison Dieu vous conseille d'accepter l'effondrement comme une libération. Ne reconstruisez pas sur les mêmes fondations — laissez l'éclair de la vérité vous illuminer. La destruction n'est que le premier acte de la reconstruction. Accueillez le chaos comme matière première du renouveau.",
+  resultat:"La Maison Dieu en résultat annonce un bouleversement qui, bien qu'éprouvant, sera libérateur. Les fausses constructions seront balayées, laissant la place à une vérité plus solide. Après la tempête, le ciel sera plus clair que jamais."
+ },
+ uprightPositions:{
+  situation:"La Maison Dieu droite secoue votre situation avec un éclair de vérité. Un effondrement ou une révélation soudaine est en cours — déstabilisant mais libérateur.",
+  obstacle:"En obstacle, La Maison Dieu droite annonce un choc nécessaire. La destruction de ce qui est faux ouvre la voie à la reconstruction sur des bases vraies.",
+  conseil:"Laissez tomber ce qui doit tomber. La Maison Dieu droite vous invite à accueillir l'effondrement comme une libération et à ne pas reconstruire les mêmes illusions.",
+  resultat:"Un bouleversement libérateur se profile. La Maison Dieu droite en résultat promet que l'effondrement des fausses structures révélera des fondations plus solides."
+ },
+ reversedPositions:{
+  situation:"La Maison Dieu renversée signale une catastrophe évitée de justesse ou une destruction qui se fait plus lentement, en sourdine.",
+  obstacle:"La résistance à l'effondrement nécessaire prolonge la souffrance. La Maison Dieu renversée montre que reporter l'inévitable ne fait qu'aggraver le choc final.",
+  conseil:"N'attendez pas que la tour s'effondre d'elle-même. La Maison Dieu renversée vous invite à initier vous-même le démantèlement contrôlé de ce qui ne tient plus.",
+  resultat:"La Maison Dieu renversée en résultat suggère une reconstruction lente après un choc amorti. Le changement sera moins brutal mais plus long à intégrer."
+ }
+},
+{id:17,numeral:'XVII',name:"L'Étoile",icon:'⭐',color:'#fdd835',
+ upright:'Espoir, inspiration, sérénité, guidance, beauté, renouveau spirituel',
+ reversed:'Désespoir, perte de foi, déconnexion, découragement, illusion perdue',
+ positions:{
+  situation:"L'Étoile illumine votre situation de son espérance radieuse. Après les épreuves, la lumière revient — douce, constante, inspirante. C'est un moment de grâce où l'univers semble bienveillant, où l'inspiration coule comme l'eau que verse la femme aux étoiles.",
+  obstacle:"L'Étoile en obstacle signale une perte de foi ou un espoir déçu qui obscurcit votre chemin. Le découragement s'est installé là où la lumière devrait briller. L'inspiration s'est tarie, la connexion avec votre guidance intérieure est rompue.",
+  conseil:"L'Étoile vous invite à lever les yeux vers le ciel et à renouer avec l'espérance. Même dans la nuit la plus sombre, les étoiles brillent pour qui sait les voir. Reconnectez-vous à votre source d'inspiration, à ce qui donne sens à votre chemin. La beauté guérit l'âme.",
+  resultat:"L'Étoile en résultat est une promesse magnifique de renouveau et d'espérance. La lumière revient après l'obscurité, l'inspiration après la sécheresse. Un chemin lumineux s'ouvre devant vous, guidé par les étoiles de votre destinée."
+ },
+ uprightPositions:{
+  situation:"L'Étoile droite baigne votre situation d'espoir et de sérénité. La guidance est claire, l'inspiration présente, la beauté illumine votre chemin.",
+  obstacle:"En appui, L'Étoile vous offre son espérance inébranlable. La foi et l'inspiration sont des forces lumineuses qui vous portent au-delà des obstacles.",
+  conseil:"Gardez foi et espérance. L'Étoile droite vous invite à suivre votre guidance intérieure avec confiance, à laisser l'inspiration éclairer vos choix.",
+  resultat:"Un avenir lumineux et inspiré se dessine. L'Étoile droite en résultat promet le renouveau spirituel, l'espoir réalisé et la sérénité retrouvée."
+ },
+ reversedPositions:{
+  situation:"L'Étoile renversée révèle un désespoir ou une perte de foi qui assombrit votre situation. L'inspiration s'est tarie, la lumière semble éteinte.",
+  obstacle:"Le découragement et la déconnexion bloquent votre avancée. L'Étoile renversée signale une perte de repères et d'espérance qui paralyse.",
+  conseil:"Retrouvez votre étoile intérieure. L'Étoile renversée vous invite à chercher la lumière même infime, à rallumer la flamme de l'espoir pas à pas.",
+  resultat:"L'Étoile renversée en résultat avertit que la lumière reviendra, mais seulement si vous faites l'effort de la chercher. L'espoir se mérite parfois."
+ }
+},
+{id:18,numeral:'XVIII',name:'La Lune',icon:'🌙',color:'#283593',
+ upright:'Illusion, intuition profonde, inconscient, rêves, peurs, imagination',
+ reversed:'Clarification, fin des illusions, vérité qui émerge, peurs surmontées',
+ positions:{
+  situation:"La Lune baigne votre situation dans sa lumière ambiguë et envoûtante. Rien n'est ce qu'il paraît — les ombres dansent, l'inconscient affleure, les rêves se mêlent à la réalité. C'est un territoire de l'âme où l'intuition profonde et l'illusion cohabitent.",
+  obstacle:"La Lune en obstacle révèle des peurs irrationnelles, des illusions ou des mensonges qui obscurcissent votre jugement. L'imagination fertile devient anxiété, l'intuition se brouille. Vous ne voyez que les reflets déformés de la réalité dans l'eau trouble de vos émotions.",
+  conseil:"La Lune vous invite à traverser vos peurs comme on traverse la nuit — avec confiance en l'aube à venir. Écoutez vos rêves, explorez votre inconscient, mais ne prenez pas les ombres pour la réalité. Développez votre intuition tout en gardant le discernement comme lanterne.",
+  resultat:"La Lune en résultat annonce une période d'exploration intérieure intense. Les vérités se révéleront progressivement, comme les yeux s'habituent à l'obscurité. La traversée de la nuit intérieure mènera à une intuition plus profonde et plus fiable."
+ },
+ uprightPositions:{
+  situation:"La Lune droite plonge votre situation dans le mystère de l'inconscient. L'intuition est vive mais les illusions sont présentes — discernez l'une de l'autre.",
+  obstacle:"En appui paradoxal, La Lune droite vous offre la richesse de votre monde intérieur. L'intuition profonde et l'imagination sont des ressources si vous savez les manier.",
+  conseil:"Explorez vos profondeurs avec courage et discernement. La Lune droite vous invite à écouter vos rêves et votre intuition sans vous perdre dans les illusions.",
+  resultat:"Une plongée dans les profondeurs de l'inconscient se dessine. La Lune droite en résultat promet des révélations intérieures puissantes mais exige le courage de la nuit."
+ },
+ reversedPositions:{
+  situation:"La Lune renversée signale la fin des illusions. La clarté commence à percer les brumes — les peurs se dissipent, la vérité émerge progressivement.",
+  obstacle:"Les peurs résiduelles ou le refus de voir la vérité bloquent encore votre avancée. La Lune renversée montre que les illusions se dissipent mais que le processus demande du courage.",
+  conseil:"Accueillez la lumière de la vérité. La Lune renversée vous invite à laisser se dissiper les illusions et à faire face à la réalité avec sérénité.",
+  resultat:"La Lune renversée en résultat promet la clarification. Les brumes se lèvent, les peurs reculent, la vérité se fait jour — avec elle, une sérénité nouvelle."
+ }
+},
+{id:19,numeral:'XIX',name:'Le Soleil',icon:'☀️',color:'#f9a825',
+ upright:'Joie, succès, vitalité, clarté, épanouissement, bonheur, chaleur',
+ reversed:'Orgueil, excès de confiance, joie ternie, éclipse temporaire',
+ positions:{
+  situation:"Le Soleil illumine votre situation de sa chaleur radieuse et bienfaisante. C'est un moment de joie pure, de clarté totale, de vitalité débordante. Tout est éclairé, les ombres reculent, la vie s'affirme dans toute sa splendeur. Le bonheur est là, simple et évident.",
+  obstacle:"Le Soleil en obstacle — paradoxe apparent — signale un excès de confiance ou un orgueil qui aveugle. Trop de lumière éblouit autant que l'obscurité cache. La joie superficielle masque peut-être des zones d'ombre qu'il faudrait éclairer.",
+  conseil:"Le Soleil vous invite à rayonner avec authenticité et générosité. Partagez votre lumière, célébrez la vie, exprimez votre joie sans retenue. La clarté du Soleil éclaire les décisions — sous sa lumière, tout devient simple et évident.",
+  resultat:"Le Soleil en résultat est la plus belle des promesses. Le succès, la joie et l'épanouissement vous attendent. La lumière chassera les dernières ombres, et vous brillerez de votre propre éclat. C'est le triomphe de la vie et du bonheur."
+ },
+ uprightPositions:{
+  situation:"Le Soleil droit baigne votre situation de joie et de clarté. Le bonheur est présent, la vitalité rayonne, le succès est tangible.",
+  obstacle:"En appui, Le Soleil vous offre sa lumière vivifiante. La joie et la clarté sont des forces puissantes qui dissipent les obstacles comme le soleil dissipe la brume.",
+  conseil:"Rayonnez et célébrez. Le Soleil droit vous invite à embrasser la joie, à agir avec la confiance de celui qui voit clairement son chemin.",
+  resultat:"Bonheur et réussite éclatante se profilent. Le Soleil droit en résultat est une promesse de joie pure et d'épanouissement total."
+ },
+ reversedPositions:{
+  situation:"Le Soleil renversé signale une joie ternie ou un éclat temporairement voilé. Le bonheur est proche mais quelque chose l'empêche de rayonner pleinement.",
+  obstacle:"L'orgueil ou l'excès de confiance bloque votre épanouissement. Le Soleil renversé met en garde contre l'aveuglement que peut causer trop de certitude.",
+  conseil:"Retrouvez l'humilité dans la joie. Le Soleil renversé vous invite à laisser votre lumière briller sans arrogance, à partager plutôt qu'à éblouir.",
+  resultat:"Le Soleil renversé en résultat promet le retour de la lumière, mais avec une nuance d'humilité. Le bonheur viendra plus profond si vous acceptez aussi les ombres."
+ }
+},
+{id:20,numeral:'XX',name:'Le Jugement',icon:'📯',color:'#6a1b9a',
+ upright:'Renaissance, appel, renouveau, révélation, absolution, résurrection',
+ reversed:'Refus de l\'appel, regret, jugement sévère, résistance au renouveau',
+ positions:{
+  situation:"Le Jugement résonne dans votre situation comme une trompette qui appelle à la renaissance. C'est le moment de la révélation, de l'absolution, de la résurrection. Les morts se lèvent, le passé est transmué, un appel puissant vous invite à répondre à votre destinée la plus haute.",
+  obstacle:"Le Jugement en obstacle signale un refus d'entendre l'appel ou des regrets qui empêchent le renouveau. Le jugement sévère — envers vous-même ou les autres — bloque la résurrection. Le passé non pardonné est le tombeau dont il faut sortir.",
+  conseil:"Le Jugement vous invite à répondre à l'appel avec tout votre être. Pardonnez le passé, absolvez-vous de vos erreurs, et relevez-vous. C'est le moment de la transmutation — transformez vos expériences passées en sagesse et renaissez de vos cendres.",
+  resultat:"Le Jugement en résultat annonce une renaissance glorieuse. L'appel sera entendu, le passé transmué, une nouvelle vie commencera. C'est la résurrection — personnelle, professionnelle, spirituelle — qui vous mènera à la réalisation de votre plus haut potentiel."
+ },
+ uprightPositions:{
+  situation:"Le Jugement droit fait retentir son appel dans votre situation. Une renaissance est en cours, une révélation transforme votre perception du passé et de l'avenir.",
+  obstacle:"En appui, Le Jugement vous offre la puissance de la résurrection. L'absolution et le renouveau sont des forces qui transmutent les épreuves en sagesse.",
+  conseil:"Répondez à l'appel. Le Jugement droit vous invite à vous relever, à pardonner et à renaître. Le moment de la transmutation est venu.",
+  resultat:"Renaissance et renouveau profond se profilent. Le Jugement droit en résultat promet la résurrection et la réalisation de votre destinée la plus haute."
+ },
+ reversedPositions:{
+  situation:"Le Jugement renversé signale un appel non entendu ou un refus de renaissance. Le passé pèse, le renouveau est bloqué par les regrets ou les jugements.",
+  obstacle:"Le jugement sévère envers vous-même ou le refus de pardonner bloque votre renaissance. Le Jugement renversé montre que les regrets sont des chaînes.",
+  conseil:"Pardonnez-vous. Le Jugement renversé vous invite à entendre l'appel que vous avez ignoré et à vous libérer du poids des regrets et des jugements.",
+  resultat:"Le Jugement renversé en résultat avertit que la renaissance est possible mais exige le courage du pardon — envers vous-même d'abord."
+ }
+},
+{id:21,numeral:'XXI',name:'Le Monde',icon:'🌍',color:'#1b5e20',
+ upright:'Accomplissement, plénitude, réussite, harmonie totale, complétude, danse cosmique',
+ reversed:'Inachèvement, blocage final, succès partiel, cycle incomplet',
+ positions:{
+  situation:"Le Monde couronne votre situation d'une harmonie totale et d'un accomplissement profond. C'est l'achèvement du grand cycle, la danse cosmique de la réalisation. Tout converge, tout trouve sa place — vous êtes au centre d'une complétude rare et précieuse.",
+  obstacle:"Le Monde en obstacle — paradoxe suprême — signale un inachèvement ou un blocage au seuil de la réalisation. Si près du but, un dernier obstacle empêche la complétude. Le cycle n'est pas tout à fait terminé, un dernier pas reste à faire.",
+  conseil:"Le Monde vous invite à embrasser la totalité de votre expérience et à danser avec la vie. Reconnaissez combien vous avez accompli, intégrez toutes les leçons du parcours. Le dernier pas vers la complétude est celui de l'acceptation joyeuse de tout ce que vous êtes.",
+  resultat:"Le Monde en résultat est le couronnement ultime. L'accomplissement total, la plénitude, la réussite dans sa forme la plus aboutie. Le cycle se complète magnifiquement, ouvrant la porte à un nouveau voyage encore plus vaste."
+ },
+ uprightPositions:{
+  situation:"Le Monde droit couronne votre situation d'accomplissement et de plénitude. L'harmonie totale est atteinte, le cycle s'achève dans la beauté.",
+  obstacle:"En appui, Le Monde vous offre l'énergie de la complétude. La réussite et l'harmonie universelle sont des forces qui portent tout à son accomplissement.",
+  conseil:"Célébrez votre accomplissement. Le Monde droit vous invite à danser avec la totalité de votre être, à embrasser la plénitude du moment.",
+  resultat:"Accomplissement total et plénitude se profilent. Le Monde droit en résultat est la plus belle conclusion — tout converge vers la réalisation suprême."
+ },
+ reversedPositions:{
+  situation:"Le Monde renversé signale un inachèvement ou un cycle qui peine à se clore. L'accomplissement est proche mais un dernier élément manque.",
+  obstacle:"Le blocage final empêche la complétude. Le Monde renversé montre que le succès est partiel et qu'un dernier effort ou lâcher-prise est nécessaire.",
+  conseil:"Identifiez ce qui manque pour compléter le cycle. Le Monde renversé vous invite à faire le dernier pas — souvent le plus simple mais le plus redouté.",
+  resultat:"Le Monde renversé en résultat promet l'accomplissement, mais avec un retard ou une forme légèrement différente de celle espérée. La complétude viendra."
+ }
+}
+];
+
+// Position definitions
+const POSITIONS = [
+  {key:'situation',label:'La Situation',sublabel:'Le Présent',desc:'Comment la question se manifeste actuellement'},
+  {key:'obstacle', label:"L'Obstacle ou l'Appui",sublabel:'Ce qui influence',desc:'Ce qui bloque ou aide à avancer'},
+  {key:'conseil',  label:'Le Conseil',sublabel:"L'Action",desc:'Quelle attitude adopter'},
+  {key:'resultat', label:'Le Résultat',sublabel:'Le Futur',desc:"Vers quoi tend l'évolution"}
+];
+
+let drawnCards = [];
+let userQuestion = '';
+
+// Stars
+function createStars(){
+  const s=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const d=document.createElement('div');d.className='star';
+    d.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;--dur:${2+Math.random()*3}s;--max-o:${0.3+Math.random()*0.7};animation-delay:${Math.random()*3}s`;
+    s.appendChild(d);
+  }
+}
+createStars();
+
+// Draw 4 unique random cards
+function drawCards(){
+  const indices=[...Array(22).keys()];
+  const picked=[];
+  for(let i=0;i<4;i++){
+    const idx=Math.floor(Math.random()*indices.length);
+    picked.push({card:ARCANA[indices[idx]],reversed:Math.random()<0.4});
+    indices.splice(idx,1);
+  }
+  return picked;
+}
+
+// Build card HTML
+function buildCard(draw,pos,index){
+  const c=draw.card;
+  const slot=document.createElement('div');
+  slot.className='card-slot';
+  slot.innerHTML=`
+    <div class="card-position-label">${pos.label}</div>
+    <div class="card-container${draw.reversed?' reversed':''}" id="card${index}">
+      <div class="card-inner" id="cardInner${index}">
+        <div class="card-face card-back">
+          <div class="card-back-pattern"><span class="card-back-symbol">✦</span></div>
+        </div>
+        <div class="card-face card-front" style="--card-color:${c.color}">
+          <span class="card-numeral">${c.numeral||'∞'}</span>
+          <div class="card-accent"></div>
+          <span class="card-icon">${c.icon}</span>
+          <div class="card-accent"></div>
+          <span class="card-title">${c.name}</span>
+          <span class="card-orientation">${draw.reversed?'Renversée':'Droite'}</span>
+        </div>
+      </div>
+    </div>`;
+  return slot;
+}
+
+// Start reading
+function startReading(){
+  userQuestion=document.getElementById('questionInput').value.trim();
+  if(!userQuestion){document.getElementById('questionInput').focus();return;}
+
+  const btn=document.getElementById('drawBtn');
+  btn.disabled=true;
+  btn.textContent='Les cartes se mêlent…';
+
+  drawnCards=drawCards();
+
+  const row=document.getElementById('cardsRow');
+  row.innerHTML='';
+  drawnCards.forEach((d,i)=>row.appendChild(buildCard(d,POSITIONS[i],i)));
+
+  const spreadArea=document.getElementById('spreadArea');
+  spreadArea.style.display='block';
+  spreadArea.classList.add('fade-in');
+
+  // Shuffle animation
+  row.classList.add('shuffling');
+  setTimeout(()=>row.classList.remove('shuffling'),600);
+
+  // Sequential flip
+  drawnCards.forEach((_,i)=>{
+    setTimeout(()=>{
+      document.getElementById('cardInner'+i).classList.add('flipped');
+    },1200+i*800);
+  });
+
+  // Show interpretation after all cards flipped
+  setTimeout(()=>{
+    showInterpretation();
+    btn.disabled=false;
+    btn.textContent='Tirer les cartes';
+  },1200+drawnCards.length*800+500);
+
+  // Scroll to spread
+  setTimeout(()=>spreadArea.scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+// Interpretation
+function showInterpretation(){
+  const section=document.getElementById('interpSection');
+  const container=document.getElementById('interpCards');
+  container.innerHTML='';
+
+  drawnCards.forEach((draw,i)=>{
+    const c=draw.card;
+    const pos=POSITIONS[i];
+    const posKey=pos.key;
+
+    // Choose interpretation based on orientation
+    let meaning;
+    if(draw.reversed && c.reversedPositions && c.reversedPositions[posKey]){
+      meaning=c.reversedPositions[posKey];
+    } else if(!draw.reversed && c.uprightPositions && c.uprightPositions[posKey]){
+      meaning=c.uprightPositions[posKey];
+    } else {
+      meaning=c.positions[posKey];
+    }
+
+    const keywords=draw.reversed?c.reversed:c.upright;
+
+    const div=document.createElement('div');
+    div.className='interp-card fade-in';
+    div.style.animationDelay=`${i*0.2}s`;
+    div.innerHTML=`
+      <h3>${c.icon} ${c.numeral?c.numeral+' — ':''}${c.name} ${draw.reversed?'(Renversée)':'(Droite)'}</h3>
+      <div class="interp-position">${pos.label} — ${pos.desc}</div>
+      <div class="interp-meaning">${meaning}</div>
+      <div class="interp-keywords">Mots-clés : ${keywords}</div>`;
+    container.appendChild(div);
+  });
+
+  // Synthesis
+  const synthDiv=document.getElementById('synthesis');
+  synthDiv.innerHTML=`<h2>✦ Synthèse de votre Tirage ✦</h2>${generateSynthesis()}`;
+
+  section.style.display='block';
+  setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'start'}),200);
+}
+
+function generateSynthesis(){
+  const q=userQuestion;
+  const c=drawnCards;
+  const names=c.map((d,i)=>`${d.card.name}${d.reversed?' renversée':''}`);
+
+  // Count reversed
+  const revCount=c.filter(d=>d.reversed).length;
+  let toneIntro='';
+  if(revCount===0) toneIntro="L'ensemble de votre tirage baigne dans une énergie lumineuse et favorable — les quatre arcanes se présentent droits, signalant un alignement remarquable.";
+  else if(revCount===1) toneIntro="Votre tirage est globalement positif, avec une nuance à ne pas négliger — un arcane renversé appelle votre attention sur un point de vigilance.";
+  else if(revCount===2) toneIntro="Votre tirage révèle un jeu d'ombres et de lumières en équilibre — deux arcanes droits et deux renversés dessinent un chemin nuancé qui demande discernement.";
+  else if(revCount===3) toneIntro="Votre tirage porte beaucoup d'énergie inversée — trois arcanes renversés signalent un moment d'intériorisation et de transformation profonde.";
+  else toneIntro="Quatre arcanes renversés — voilà un tirage rare et puissant. L'énergie est profondément intériorisée, les défis sont réels mais porteurs d'une transformation radicale.";
+
+  // Card interaction narrative
+  const sit=c[0].card.name;
+  const obs=c[1].card.name;
+  const con=c[2].card.name;
+  const res=c[3].card.name;
+
+  let narrative=`<p style="margin-bottom:1rem">${toneIntro}</p>`;
+  narrative+=`<p style="margin-bottom:1rem">Face à votre question — <em>«\u00a0${q}\u00a0»</em> — les arcanes dessinent un récit éloquent. <strong>${names[0]}</strong> en situation présente pose le décor de votre interrogation. `;
+
+  if(c[1].reversed){
+    narrative+=`<strong>${names[1]}</strong>, en position d'obstacle, signale un défi intérieur ou un blocage à transmuter. `;
+  } else {
+    narrative+=`<strong>${names[1]}</strong>, en position d'appui, vous offre une ressource précieuse pour naviguer cette période. `;
+  }
+
+  narrative+=`Le conseil de <strong>${names[2]}</strong> éclaire la voie à suivre, `;
+
+  if(c[3].reversed){
+    narrative+=`tandis que <strong>${names[3]}</strong> en résultat invite à la prudence et à l'ajustement pour atteindre l'issue souhaitée.</p>`;
+  } else {
+    narrative+=`et <strong>${names[3]}</strong> en résultat laisse entrevoir une évolution prometteuse si vous suivez cette guidance.</p>`;
+  }
+
+  narrative+=`<p>Les arcanes du Tarot de Marseille ne prédisent pas un destin figé — ils éclairent les courants à l'œuvre et vous invitent à devenir acteur conscient de votre histoire. Méditez sur ce tirage et laissez sa sagesse infuser en vous.</p>`;
+
+  return narrative;
+}
+
+function resetReading(){
+  document.getElementById('spreadArea').style.display='none';
+  document.getElementById('interpSection').style.display='none';
+  document.getElementById('questionInput').value='';
+  document.getElementById('questionInput').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Enter key support
+document.getElementById('questionInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter')startReading();
+});
+</script>
+</body>
+</html>
